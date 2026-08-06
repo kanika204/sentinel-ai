@@ -16,7 +16,7 @@ function ContactList({ contacts, onDelete, onEdit }) {
   }
 
   return (
-    <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+    <div className="max-w-5xl mx-auto grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       {contacts.map((contact) => (
         <ContactCard
           key={contact.id}

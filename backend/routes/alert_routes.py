@@ -46,6 +46,7 @@ def trigger_sos():
             risk["risk_level"],
             trigger_type
         )
+
         print("\n===== AI RECOMMENDATION =====")
         print(ai_recommendation)
         print("=============================\n")
@@ -74,6 +75,7 @@ def trigger_sos():
         # Notify Contacts
         # -------------------------
         contacts_notified = notify_contacts(
+            emergency.id,
             contacts,
             emergency.latitude,
             emergency.longitude
@@ -93,12 +95,14 @@ def trigger_sos():
         }), 201
 
     except Exception as e:
+
         db.session.rollback()
 
         return jsonify({
             "success": False,
             "message": str(e)
         }), 500
+
 
 @alert_bp.route("/emergency/<int:emergency_id>/end", methods=["PUT"])
 def end_emergency(emergency_id):
@@ -108,6 +112,7 @@ def end_emergency(emergency_id):
         emergency = Emergency.query.get(emergency_id)
 
         if not emergency:
+
             return jsonify({
                 "success": False,
                 "message": "Emergency not found"
@@ -133,4 +138,4 @@ def end_emergency(emergency_id):
             "success": False,
             "message": str(e)
 
-        }),500
+        }), 500

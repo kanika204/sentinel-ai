@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import EmergencyService from "../../services/EmergencyService";
 import {
   FaMicrophone,
   FaStop,
   FaCheckCircle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import NotificationPanel from "../notifications/NotificationPanel";
+
 
 function VoiceActivator() {
 
@@ -19,6 +22,7 @@ function VoiceActivator() {
   const [statusMessage, setStatusMessage] = useState("");
   const [sosTriggered, setSosTriggered] = useState(false);
   const [emergencyId, setEmergencyId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 const navigate = useNavigate();
   // ============================
   // REFS
@@ -303,6 +307,23 @@ const navigate = useNavigate();
       const data = await response.json();
 
       if (data.success) {
+        EmergencyService.setEmergency({
+
+        id: data.emergency_id,
+
+        status: "ACTIVE",
+
+        latitude,
+
+        longitude,
+
+        trigger_type: "VOICE_COMMAND",
+
+        created_at: new Date(),
+
+    });
+
+    console.log(EmergencyService.getEmergency());
 
         console.log("SOS Created");
         console.log("Emergency ID:", data.emergency_id);
@@ -314,6 +335,7 @@ const navigate = useNavigate();
         startLocationTracking(
           data.emergency_id
         );
+        await notifyContacts(data.emergency_id);
 
         setStatusMessage(
           "✅ Emergency Created Successfully!"
@@ -356,6 +378,58 @@ const navigate = useNavigate();
     }
 
   };
+
+  const notifyContacts = async (emergencyId) => {
+
+  try {
+
+    setStatusMessage("📨 Sending emergency alerts...");
+
+    const response = await fetch(
+      "http://127.0.0.1:5000/api/notify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          emergency_id: emergencyId,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+
+      console.log("Notifications");
+
+      console.table(data.notifications);
+      setNotifications(data.notifications);
+
+      setStatusMessage(
+        `✅ ${data.notifications.length} trusted contacts notified`
+      );
+
+    }
+
+    else {
+
+      setStatusMessage("❌ Notification Failed");
+
+    }
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    setStatusMessage("❌ Notification Server Error");
+
+  }
+
+};
 
   // ============================
   // LIVE LOCATION TRACKING
@@ -561,6 +635,10 @@ const navigate = useNavigate();
 
     )}
 
+<NotificationPanel
+    notifications={notifications}
+    emergencyId={emergencyId}
+/>
     {/* Buttons */}
     <div className="mt-8 flex flex-wrap gap-4">
 

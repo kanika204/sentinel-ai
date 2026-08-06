@@ -94,37 +94,100 @@ function AlertCard({ alert }) {
       </div>
 
       {/* Location & Actions */}
-      <div className="mt-6 flex justify-between items-center">
+    {/* Location */}
 
-        <div className="flex items-center gap-2 text-gray-600">
-          <FaMapMarkerAlt className="text-red-500" />
+<div className="mt-6 flex items-center gap-2 text-gray-600">
 
-          <span>
-            {alert.latitude}, {alert.longitude}
-          </span>
-        </div>
+  <FaMapMarkerAlt className="text-red-500" />
 
-        <div className="flex gap-3">
+  <span>
 
-          <button
-            onClick={() => navigate(`/tracking/${alert.id}`)}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300"
-          >
-            📍 Live Tracking
-          </button>
+    {alert.latitude}, {alert.longitude}
 
-          <a
-            href={alert.maps_link}
-            target="_blank"
-            rel="noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300"
-          >
-            View Map
-          </a>
+  </span>
 
-        </div>
+</div>
 
-      </div>
+{/* Actions */}
+
+<div className="mt-6">
+
+  <h3 className="font-semibold text-lg mb-4">
+
+    Quick Actions
+
+  </h3>
+
+  <div className="flex flex-wrap gap-3">
+
+    {alert.status === "ACTIVE" && (
+  <button
+    onClick={() => navigate(`/tracking/${alert.id}`)}
+    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition hover:scale-105"
+  >
+    📍 Live Tracking
+  </button>
+)}
+    <button
+
+      onClick={() => navigate(`/contact/${alert.id}`)}
+
+      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition hover:scale-105"
+
+    >
+
+      👥 Contact Dashboard
+
+    </button>
+
+    <button
+
+      onClick={() => navigate(`/timeline/${alert.id}`)}
+
+      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition hover:scale-105"
+
+    >
+
+      📜 Timeline
+
+    </button>
+
+    <button
+
+      onClick={() =>
+        window.open(
+          `http://127.0.0.1:5000/api/report/download/${alert.id}`,
+          "_blank"
+        )
+      }
+
+      className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition hover:scale-105"
+
+    >
+
+      📄 Report
+
+    </button>
+
+    <a
+
+      href={alert.maps_link}
+
+      target="_blank"
+
+      rel="noreferrer"
+
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition hover:scale-105"
+
+    >
+
+      🗺 View Map
+
+    </a>
+
+  </div>
+
+</div>
 
     </div>
   );

@@ -63,7 +63,7 @@ function ContactForm({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
+    <div className="bg-white rounded-2xl shadow-lg p-6 ml-6">
 
       <h2 className="text-2xl font-bold mb-6">
         {editingContact ? "Edit Contact" : "Add Trusted Contact"}
@@ -71,7 +71,7 @@ function ContactForm({
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4"
+        className="space-y-4 pr-8"
       >
 
         {/* Name */}

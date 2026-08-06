@@ -115,7 +115,9 @@ function Contacts() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
+  <div className="min-h-screen bg-slate-100">
+
+    <div className="px-8 pt-8">
 
       <h1 className="text-4xl font-bold mb-8">
         👥 Trusted Contacts
@@ -139,7 +141,9 @@ function Contacts() {
       </div>
 
     </div>
-  );
+
+  </div>
+);
 }
 
 export default Contacts;

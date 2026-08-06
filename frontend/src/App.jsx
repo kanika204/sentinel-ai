@@ -11,6 +11,10 @@ import History from "./pages/History";
 import VoiceSOS from "./pages/VoiceSOS";
 // import Settings from "./pages/Settings";
 import LiveTracking from "./pages/LiveTracking";
+import ContactDashboard from "./pages/ContactDashboard";
+import ControlCenter from "./pages/ControlCenter";
+import EmergencyTimeline from "./pages/EmergencyTimeline";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 function App() {
   return (
@@ -30,6 +34,29 @@ function App() {
           <Route
     path="/tracking/:id"
     element={<LiveTracking />}
+    
+/>
+<Route
+
+path="/contact/:id"
+
+element={<ContactDashboard/>}
+
+/>
+<Route
+    path="/control-center"
+    element={<ControlCenter/>}
+/>
+<Route
+
+path="/timeline/:id"
+
+element={<EmergencyTimeline/>}
+
+/>
+<Route
+    path="/analytics"
+    element={<AnalyticsDashboard />}
 />
         </Routes>
 

@@ -11,6 +11,10 @@ import {
   FaHistory,
   FaPhoneAlt,
   FaBookMedical,
+  FaSatelliteDish,
+  FaChartBar,
+  FaStream,
+  FaDesktop,
 } from "react-icons/fa";
 
 import { useNavigate } from "react-router-dom";
@@ -112,7 +116,7 @@ function Dashboard() {
     ⚡ Quick Actions
   </h2>
 
-  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
 
     <button
       onClick={() => navigate("/voice-sos")}
@@ -173,6 +177,82 @@ function Dashboard() {
         Emergency
       </p>
     </button>
+
+    <button
+  onClick={() => navigate("/control-center")}
+  className="rounded-xl bg-slate-800 p-6 text-white transition hover:scale-105 hover:bg-slate-900"
+>
+  <FaDesktop className="mx-auto mb-3 text-4xl" />
+
+  <h3 className="text-xl font-bold">
+    Control Center
+  </h3>
+
+  <p className="mt-2 text-sm">
+    Central emergency monitoring.
+  </p>
+</button>
+
+<button
+  onClick={() => navigate("/analytics")}
+  className="rounded-xl bg-purple-600 p-6 text-white transition hover:scale-105 hover:bg-purple-700"
+>
+  <FaChartBar className="mx-auto mb-3 text-4xl" />
+
+  <h3 className="text-xl font-bold">
+    Analytics
+  </h3>
+
+  <p className="mt-2 text-sm">
+    View system statistics.
+  </p>
+</button>
+
+<button
+  onClick={() => {
+
+    if(history.length>0){
+
+      navigate(`/timeline/${history[0].id}`);
+
+    }
+
+  }}
+  className="rounded-xl bg-orange-600 p-6 text-white transition hover:scale-105 hover:bg-orange-700"
+>
+  <FaStream className="mx-auto mb-3 text-4xl" />
+
+  <h3 className="text-xl font-bold">
+    Timeline
+  </h3>
+
+  <p className="mt-2 text-sm">
+    View emergency timeline.
+  </p>
+</button>
+
+<button
+  onClick={() => {
+
+    if(history.length>0){
+
+      navigate(`/tracking/${history[0].id}`);
+
+    }
+
+  }}
+  className="rounded-xl bg-cyan-600 p-6 text-white transition hover:scale-105 hover:bg-cyan-700"
+>
+  <FaSatelliteDish className="mx-auto mb-3 text-4xl" />
+
+  <h3 className="text-xl font-bold">
+    Live Tracking
+  </h3>
+
+  <p className="mt-2 text-sm">
+    Monitor live GPS location.
+  </p>
+</button>
 
   </div>
 
