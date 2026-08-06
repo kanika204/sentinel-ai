@@ -1,26 +1,31 @@
 import { motion } from "framer-motion";
 
 function StatCard({ icon, title, value, color }) {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.04 }}
-      className="bg-white rounded-2xl shadow-lg p-6"
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-500">{title}</p>
+ return (
+  <motion.div
+    whileHover={{ scale: 1.03, y: -3 }}
+    transition={{ duration: 0.2 }}
+    className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md transition-all hover:shadow-xl"
+  >
+    <div className="flex items-start justify-between">
 
-          <h2 className={`text-4xl font-bold mt-3 ${color}`}>
-            {value}
-          </h2>
-        </div>
+      <div>
+        <p className="text-base font-semibold text-slate-500">
+          {title}
+        </p>
 
-        <div className="text-5xl">
-          {icon}
-        </div>
+        <h2 className={`mt-4 text-5xl font-bold ${color}`}>
+          {value}
+        </h2>
       </div>
-    </motion.div>
-  );
+
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl">
+        {icon}
+      </div>
+
+    </div>
+  </motion.div>
+);
 }
 
 export default StatCard;

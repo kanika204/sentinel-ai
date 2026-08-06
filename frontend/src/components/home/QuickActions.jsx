@@ -37,17 +37,17 @@ function QuickActions() {
 
   return (
     <section className="w-full py-24 bg-slate-50">
-      <div className="mt-12 flex flex-wrap justify-center gap-8">
+      <div className="mx-auto max-w-7xl px-6">
 
-        <div className="mb-14 text-center">
-          <h2 className="text-4xl font-bold text-slate-800">
-            Quick Actions
-          </h2>
+        <div className="mt-16 mb-10 text-center">
+  <h2 className="text-5xl font-bold text-slate-800">
+    Quick Actions
+  </h2>
 
-          <p className="mt-3 text-lg text-slate-500">
-            Access your essential safety tools instantly.
-          </p>
-        </div>
+  <p className="mt-3 text-xl text-slate-500">
+    Access your essential safety tools instantly.
+  </p>
+</div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
           {actions.map((action) => (

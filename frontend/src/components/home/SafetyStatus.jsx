@@ -32,13 +32,13 @@ function SafetyStatus() {
   ];
 
   return (
-    <section className="bg-white py-24">
+    <section className="w-full bg-white py-20">
       <div className="mx-auto max-w-7xl px-6">
 
         {/* Header */}
         
 
-          <div className="mb-14 text-center">
+          <div className="mb-18 text-center">
             <h2 className="text-center text-4xl font-bold text-slate-800">
               Safety Status
             </h2>
@@ -48,15 +48,15 @@ function SafetyStatus() {
             </p>
           </div>
 
-        {/* Cards */}
+       {/* Cards */}
 
- <div className="mt-12 flex flex-wrap justify-center gap-8">
+<div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
 
   {services.map((service) => (
 
     <div
       key={service.title}
-      className="w-72 rounded-3xl border border-slate-100 bg-gradient-to-br from-pink-50 via-white to-violet-50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+      className="w-full rounded-3xl border border-slate-100 bg-gradient-to-br from-pink-50 via-white to-violet-50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
     >
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-violet-600 shadow">
         {service.icon}
