@@ -5,3 +5,4 @@ twilio
 reportlab
 gunicorn
 python-dotenv
+google-genai
