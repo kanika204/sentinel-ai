@@ -28,7 +28,7 @@ function AnalyticsDashboard() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:5000/api/analytics"
+        "https://sentinel-ai-backend-67u8.onrender.com/api/analytics"
       );
 
       const data = await response.json();

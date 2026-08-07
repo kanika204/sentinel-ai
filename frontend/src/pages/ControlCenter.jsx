@@ -38,7 +38,7 @@ function ControlCenter() {
 
       const response = await fetch(
 
-        "http://127.0.0.1:5000/api/control-center"
+        "https://sentinel-ai-backend-67u8.onrender.com/api/control-center"
 
       );
 
@@ -77,7 +77,7 @@ function ControlCenter() {
 
     const response = await fetch(
 
-      `http://127.0.0.1:5000/api/emergency/${data.active_emergency.id}/end`,
+      `https://sentinel-ai-backend-67u8.onrender.com/api/emergency/${data.active_emergency.id}/end`,
 
       {
 
@@ -294,7 +294,7 @@ function ControlCenter() {
   <button
     onClick={() =>
       window.open(
-        `http://127.0.0.1:5000/api/report/download/${active.id}`,
+        `https://sentinel-ai-backend-67u8.onrender.com/api/report/download/${active.id}`,
         "_blank"
       )
     }

@@ -21,7 +21,7 @@ const [emergency, setEmergency] = useState(null);
   const fetchLocations = async () => {
     try { 
       const response = await fetch(
-        `http://127.0.0.1:5000/api/location/${id}`
+        `https://sentinel-ai-backend-67u8.onrender.com/api/location/${id}`
       );
 
       const data = await response.json();
@@ -48,7 +48,7 @@ const [emergency, setEmergency] = useState(null);
     setEnding(true);
 
     const response = await fetch(
-      `http://127.0.0.1:5000/api/emergency/${id}/end`,
+      `https://sentinel-ai-backend-67u8.onrender.com/api/emergency/${id}/end`,
       {
         method: "PUT",
       }

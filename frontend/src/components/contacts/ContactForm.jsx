@@ -63,22 +63,22 @@ function ContactForm({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 ml-6">
+    <div className="bg-white rounded-2xl shadow-lg p-6 mx-6">
 
-      <h2 className="text-2xl font-bold mb-6">
+      <h2 className="text-2xl font-bold text-slate-800 mb-8">
         {editingContact ? "Edit Contact" : "Add Trusted Contact"}
       </h2>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 pr-8"
+        className="space-y-6 px-8"
       >
 
         {/* Name */}
 
         <div>
 
-          <label className="block mb-2 font-medium">
+          <label className="block mb-2 font-semibold text-gray-700">
             Name
           </label>
 
@@ -88,7 +88,7 @@ function ContactForm({
             value={formData.name}
             onChange={handleChange}
             placeholder="Enter contact name"
-            className="w-full border rounded-lg p-3"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
           />
 
         </div>
@@ -133,7 +133,7 @@ function ContactForm({
 
         {/* Primary Contact */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pt-2">
 
           <input
             type="checkbox"
@@ -154,7 +154,7 @@ function ContactForm({
 
           <button
             type="submit"
-            className={`flex-1 py-3 rounded-lg text-white transition ${
+            className={`flex-1 py-3  rounded-xl font-semibold text-white transition duration-200  ${
               editingContact
                 ? "bg-yellow-500 hover:bg-yellow-600"
                 : "bg-blue-600 hover:bg-blue-700"

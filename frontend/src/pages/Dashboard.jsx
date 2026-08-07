@@ -32,10 +32,10 @@ function Dashboard() {
 
   async function loadDashboard() {
     try {
-      const historyRes = await fetch("http://127.0.0.1:5000/api/history");
+      const historyRes = await fetch("https://sentinel-ai-backend-67u8.onrender.com/api/history");
       const historyData = await historyRes.json();
 
-      const contactsRes = await fetch("http://127.0.0.1:5000/api/contacts");
+      const contactsRes = await fetch("https://sentinel-ai-backend-67u8.onrender.com/api/contacts");
       const contactsData = await contactsRes.json();
 
       setHistory(historyData.history || []);

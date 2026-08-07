@@ -39,7 +39,7 @@ function ContactDashboard() {
 
     const response = await fetch(
 
-      `http://127.0.0.1:5000/api/contact-dashboard/${id}`
+      `https://sentinel-ai-backend-67u8.onrender.com/api/contact-dashboard/${id}`
 
     );
 
@@ -201,7 +201,7 @@ const contacts = dashboard.contacts;
 
       onClick={() =>
         window.open(
-          `http://127.0.0.1:5000/api/report/download/${id}`,
+          `https://sentinel-ai-backend-67u8.onrender.com/api/report/download/${id}`,
           "_blank"
         )
       }

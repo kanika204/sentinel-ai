@@ -16,7 +16,7 @@ function Contacts() {
 
   async function fetchContacts() {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/contacts");
+      const response = await fetch("https://sentinel-ai-backend-67u8.onrender.com/api/contacts");
       const data = await response.json();
 
       setContacts(data);
@@ -30,7 +30,7 @@ function Contacts() {
   // Add Contact
   async function addContact(contactData) {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/contacts", {
+      const response = await fetch("https://sentinel-ai-backend-67u8.onrender.com/api/contacts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +55,7 @@ function Contacts() {
   async function updateContact(id, contactData) {
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/contacts/${id}`,
+        `https://sentinel-ai-backend-67u8.onrender.com/api/contacts/${id}`,
         {
           method: "PUT",
           headers: {
@@ -89,7 +89,7 @@ function Contacts() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/contacts/${id}`,
+        `https://sentinel-ai-backend-67u8.onrender.com/api/contacts/${id}`,
         {
           method: "DELETE",
         }
@@ -117,7 +117,11 @@ function Contacts() {
   return (
   <div className="min-h-screen bg-slate-100">
 
-    <div className="px-8 pt-8">
+    <div className="max-w-7xl mx-auto px-10 py-8"
+  style={{
+    marginLeft: "40px",
+    marginRight: "80px",
+  }}>
 
       <h1 className="text-4xl font-bold mb-8">
         👥 Trusted Contacts

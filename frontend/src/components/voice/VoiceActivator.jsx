@@ -290,7 +290,7 @@ const navigate = useNavigate();
       );
 
       const response = await fetch(
-        "http://127.0.0.1:5000/api/sos",
+        "https://sentinel-ai-backend-67u8.onrender.com/api/sos",
         {
           method: "POST",
           headers: {
@@ -386,7 +386,7 @@ const navigate = useNavigate();
     setStatusMessage("📨 Sending emergency alerts...");
 
     const response = await fetch(
-      "http://127.0.0.1:5000/api/notify",
+      "https://sentinel-ai-backend-67u8.onrender.com/api/notify",
       {
         method: "POST",
         headers: {
@@ -477,7 +477,7 @@ const navigate = useNavigate();
 
             const response =
               await fetch(
-                "http://127.0.0.1:5000/api/location/update",
+                "https://sentinel-ai-backend-67u8.onrender.com/api/location/update",
                 {
                   method: "POST",
                   headers: {

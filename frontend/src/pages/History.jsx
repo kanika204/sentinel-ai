@@ -11,7 +11,7 @@ function History() {
 
   async function fetchHistory() {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/history");
+      const response = await fetch("https://sentinel-ai-backend-67u8.onrender.com/api/history");
       const data = await response.json();
 
       if (data.success) {

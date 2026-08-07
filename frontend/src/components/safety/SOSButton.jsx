@@ -28,7 +28,7 @@ function SOSButton() {
 
       try {
 
-        const response = await fetch("http://127.0.0.1:5000/api/sos", {
+        const response = await fetch("https://sentinel-ai-backend-67u8.onrender.com/api/sos", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

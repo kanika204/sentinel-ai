@@ -156,7 +156,7 @@ function AlertCard({ alert }) {
 
       onClick={() =>
         window.open(
-          `http://127.0.0.1:5000/api/report/download/${alert.id}`,
+          `https://sentinel-ai-backend-67u8.onrender.com/api/report/download/${alert.id}`,
           "_blank"
         )
       }
