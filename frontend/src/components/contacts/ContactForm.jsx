@@ -63,7 +63,8 @@ function ContactForm({
   }
 
   return (
-  <div className="bg-white rounded-2xl shadow-lg p-8">
+  <div className="bg-white rounded-2xl shadow-lg mb-8"
+  style={{ padding: "32px" }}>
 
     <h2 className="text-2xl font-bold text-slate-800 mb-8">
       {editingContact ? "Edit Contact" : "Add Trusted Contact"}
