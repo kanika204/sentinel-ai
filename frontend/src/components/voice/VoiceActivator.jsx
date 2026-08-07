@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import EmergencyService from "../../services/EmergencyService";
 import {
   FaMicrophone,
   FaStop,
   FaCheckCircle,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import NotificationPanel from "../notifications/NotificationPanel";
 
+const API_BASE_URL =
+  "https://sentinel-ai-backend-67u8.onrender.com";
 
 function VoiceActivator() {
-
   // ============================
   // STATES
   // ============================
@@ -22,8 +20,11 @@ function VoiceActivator() {
   const [statusMessage, setStatusMessage] = useState("");
   const [sosTriggered, setSosTriggered] = useState(false);
   const [emergencyId, setEmergencyId] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-const navigate = useNavigate();
+
+  // Shake detection
+  const [shakeEnabled, setShakeEnabled] = useState(false);
+  const [shakeCount, setShakeCount] = useState(0);
+
   // ============================
   // REFS
   // ============================
@@ -34,12 +35,27 @@ const navigate = useNavigate();
   // Prevent duplicate SOS
   const sosLockRef = useRef(false);
 
+  // Shake detection refs
+  const shakeCountRef = useRef(0);
+  const lastShakeTimeRef = useRef(0);
+  const shakeResetTimerRef = useRef(null);
+  const lastTriggerTimeRef = useRef(0);
+
+  // ============================
+  // SHAKE SETTINGS
+  // ============================
+
+  const SHAKE_THRESHOLD = 18;
+  const REQUIRED_SHAKES = 3;
+  const SHAKE_WINDOW = 1500;
+  const MIN_SHAKE_INTERVAL = 180;
+  const SOS_COOLDOWN = 10000;
+
   // ============================
   // SPEECH RECOGNITION
   // ============================
 
   useEffect(() => {
-
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
@@ -56,7 +72,6 @@ const navigate = useNavigate();
     recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
-
       let text = "";
 
       for (
@@ -82,7 +97,6 @@ const navigate = useNavigate();
           lowerText.includes("danger")
         )
       ) {
-
         console.log("Emergency keyword detected");
 
         sosLockRef.current = true;
@@ -91,14 +105,11 @@ const navigate = useNavigate();
 
         setIsListening(false);
 
-        getLocationAndTriggerSOS();
-
+        getLocationAndTriggerSOS("VOICE_COMMAND");
       }
-
     };
 
     recognition.onerror = (event) => {
-
       console.error(event);
 
       setStatusMessage(
@@ -110,31 +121,31 @@ const navigate = useNavigate();
       );
 
       setIsListening(false);
-
     };
 
     recognition.onend = () => {
-
       setIsListening(false);
-
     };
 
     recognitionRef.current = recognition;
 
     return () => {
-
-      recognition.stop();
+      try {
+        recognition.stop();
+      } catch (error) {
+        console.log("Recognition already stopped.");
+      }
 
       if (watchIdRef.current !== null) {
-
         navigator.geolocation.clearWatch(
           watchIdRef.current
         );
-
       }
 
+      if (shakeResetTimerRef.current) {
+        clearTimeout(shakeResetTimerRef.current);
+      }
     };
-
   }, []);
 
   // ============================
@@ -142,7 +153,6 @@ const navigate = useNavigate();
   // ============================
 
   const speakMessage = (message) => {
-
     if (!window.speechSynthesis) return;
 
     window.speechSynthesis.cancel();
@@ -156,7 +166,6 @@ const navigate = useNavigate();
     utterance.volume = 1;
 
     window.speechSynthesis.speak(utterance);
-
   };
 
   // ============================
@@ -164,25 +173,26 @@ const navigate = useNavigate();
   // ============================
 
   const startListening = () => {
-
     if (!recognitionRef.current) return;
 
-    setTranscript("");
-    setStatusMessage("");
-    setSosTriggered(false);
+    try {
+      setTranscript("");
+      setStatusMessage("");
+      setSosTriggered(false);
+      setEmergencyId(null);
 
-    setEmergencyId(null);
+      sosLockRef.current = false;
 
-    sosLockRef.current = false;
+      recognitionRef.current.start();
 
-    recognitionRef.current.start();
+      setIsListening(true);
 
-    setIsListening(true);
-
-    speakMessage(
-      "Voice listening started."
-    );
-
+      speakMessage(
+        "Voice listening started."
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   // ============================
@@ -190,21 +200,12 @@ const navigate = useNavigate();
   // ============================
 
   const stopListening = () => {
-
     if (recognitionRef.current) {
-
-      recognitionRef.current.stop();
-
-    }
-
-    if (watchIdRef.current !== null) {
-
-      navigator.geolocation.clearWatch(
-        watchIdRef.current
-      );
-
-      watchIdRef.current = null;
-
+      try {
+        recognitionRef.current.stop();
+      } catch (error) {
+        console.log("Recognition already stopped.");
+      }
     }
 
     setIsListening(false);
@@ -212,17 +213,196 @@ const navigate = useNavigate();
     speakMessage(
       "Voice listening stopped."
     );
-
   };
 
-  // ============================
+  // ============================================================
+  // SHAKE DETECTION
+  // ============================================================
+
+  const handleDeviceMotion = (event) => {
+    const acceleration =
+      event.accelerationIncludingGravity;
+
+    if (!acceleration) return;
+
+    const x = acceleration.x || 0;
+    const y = acceleration.y || 0;
+    const z = acceleration.z || 0;
+
+    const magnitude = Math.sqrt(
+      x * x + y * y + z * z
+    );
+
+    // Ignore weak movements
+    if (magnitude < SHAKE_THRESHOLD) {
+      return;
+    }
+
+    const now = Date.now();
+
+    // Avoid counting the same movement repeatedly
+    if (
+      now - lastShakeTimeRef.current <
+      MIN_SHAKE_INTERVAL
+    ) {
+      return;
+    }
+
+    lastShakeTimeRef.current = now;
+
+    // Don't allow another SOS immediately
+    if (
+      now - lastTriggerTimeRef.current <
+      SOS_COOLDOWN
+    ) {
+      return;
+    }
+
+    shakeCountRef.current += 1;
+
+    setShakeCount(shakeCountRef.current);
+
+    console.log(
+      "Shake detected:",
+      shakeCountRef.current
+    );
+
+    // Reset shake sequence if user doesn't complete it
+    clearTimeout(shakeResetTimerRef.current);
+
+    shakeResetTimerRef.current = setTimeout(() => {
+      shakeCountRef.current = 0;
+      setShakeCount(0);
+    }, SHAKE_WINDOW);
+
+    // Three shakes = emergency
+    if (
+      shakeCountRef.current >=
+      REQUIRED_SHAKES
+    ) {
+      console.log(
+        "🚨 Shake SOS Triggered"
+      );
+
+      shakeCountRef.current = 0;
+      setShakeCount(0);
+
+      lastTriggerTimeRef.current = now;
+
+      // Prevent duplicate SOS
+      if (sosLockRef.current) {
+        return;
+      }
+
+      sosLockRef.current = true;
+
+      setStatusMessage(
+        "🚨 Shake pattern detected. Triggering emergency..."
+      );
+
+      speakMessage(
+        "Emergency detected. Triggering SOS."
+      );
+
+      getLocationAndTriggerSOS(
+        "SHAKE_GESTURE"
+      );
+    }
+  };
+
+  // ============================================================
+  // ENABLE SHAKE DETECTION
+  // ============================================================
+
+  const enableShakeDetection = async () => {
+    console.log("DeviceMotionEvent:", window.DeviceMotionEvent);
+console.log(
+  "requestPermission:",
+  typeof DeviceMotionEvent?.requestPermission
+);
+    if (!("DeviceMotionEvent" in window)) {
+      setStatusMessage(
+        "❌ Motion detection is not supported on this device."
+      );
+      return;
+    }
+
+    try {
+      // iOS requires explicit permission
+      if (
+        typeof DeviceMotionEvent.requestPermission ===
+        "function"
+      ) {
+        const permission =
+          await DeviceMotionEvent.requestPermission();
+
+        if (permission !== "granted") {
+          setStatusMessage(
+            "❌ Motion permission was denied."
+          );
+          return;
+        }
+      }
+
+      window.addEventListener(
+        "devicemotion",
+        handleDeviceMotion
+      );
+
+      setShakeEnabled(true);
+
+      setStatusMessage(
+        "📳 Shake detection is active. Shake your phone 3 times quickly to trigger SOS."
+      );
+
+      speakMessage(
+        "Shake detection activated."
+      );
+
+      console.log(
+        "Shake detection enabled."
+      );
+    } catch (error) {
+      console.error(
+        "Motion permission error:",
+        error
+      );
+
+      setStatusMessage(
+        "❌ Unable to enable motion detection."
+      );
+    }
+  };
+
+  // ============================================================
+  // DISABLE SHAKE DETECTION
+  // ============================================================
+
+  const disableShakeDetection = () => {
+    window.removeEventListener(
+      "devicemotion",
+      handleDeviceMotion
+    );
+
+    setShakeEnabled(false);
+
+    shakeCountRef.current = 0;
+
+    setShakeCount(0);
+
+    setStatusMessage(
+      "📳 Shake detection disabled."
+    );
+  };
+
+  // ============================================================
   // GET LOCATION
-  // ============================
+  // ============================================================
 
-  const getLocationAndTriggerSOS = () => {
-
+  const getLocationAndTriggerSOS = (
+    triggerType = "VOICE_COMMAND"
+  ) => {
     if (!navigator.geolocation) {
-
       setStatusMessage(
         "Geolocation is not supported."
       );
@@ -231,8 +411,9 @@ const navigate = useNavigate();
         "Geolocation is not supported."
       );
 
-      return;
+      sosLockRef.current = false;
 
+      return;
     }
 
     setStatusMessage(
@@ -240,20 +421,15 @@ const navigate = useNavigate();
     );
 
     navigator.geolocation.getCurrentPosition(
-
       (position) => {
-
         triggerSOS(
-
           position.coords.latitude,
-          position.coords.longitude
-
+          position.coords.longitude,
+          triggerType
         );
-
       },
 
       (error) => {
-
         console.error(error);
 
         setStatusMessage(
@@ -264,42 +440,50 @@ const navigate = useNavigate();
           "Unable to access your location."
         );
 
+        sosLockRef.current = false;
       },
 
       {
         enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
       }
-
     );
-
   };
 
-  // ============================
-  // PART 2 CONTINUES BELOW...
-  // ============================
-    // ============================
+  // ============================================================
   // TRIGGER SOS
-  // ============================
+  // ============================================================
 
-  const triggerSOS = async (latitude, longitude) => {
-
+  const triggerSOS = async (
+    latitude,
+    longitude,
+    triggerType = "VOICE_COMMAND"
+  ) => {
     try {
-
       setStatusMessage(
         "🚨 Triggering Emergency..."
       );
 
+      console.log(
+        "SOS Trigger:",
+        triggerType
+      );
+
       const response = await fetch(
-        "https://sentinel-ai-backend-67u8.onrender.com/api/sos",
+        `${API_BASE_URL}/api/sos`,
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify({
             latitude,
             longitude,
-            trigger_type: "VOICE_COMMAND",
+            trigger_type: triggerType,
           }),
         }
       );
@@ -307,35 +491,20 @@ const navigate = useNavigate();
       const data = await response.json();
 
       if (data.success) {
-        EmergencyService.setEmergency({
-
-        id: data.emergency_id,
-
-        status: "ACTIVE",
-
-        latitude,
-
-        longitude,
-
-        trigger_type: "VOICE_COMMAND",
-
-        created_at: new Date(),
-
-    });
-
-    console.log(EmergencyService.getEmergency());
-
         console.log("SOS Created");
-        console.log("Emergency ID:", data.emergency_id);
 
-        setEmergencyId(data.emergency_id);
+        console.log(
+          "Emergency ID:",
+          data.emergency_id
+        );
 
-        console.log("Starting Location Tracking...");
+        setEmergencyId(
+          data.emergency_id
+        );
 
         startLocationTracking(
           data.emergency_id
         );
-        await notifyContacts(data.emergency_id);
 
         setStatusMessage(
           "✅ Emergency Created Successfully!"
@@ -346,9 +515,7 @@ const navigate = useNavigate();
         speakMessage(
           "Emergency detected. Your location has been shared. Your trusted contacts are being notified. Please move to a safe place."
         );
-
       } else {
-
         setStatusMessage(
           "❌ Failed to trigger emergency."
         );
@@ -358,11 +525,8 @@ const navigate = useNavigate();
         speakMessage(
           "Sorry. I could not trigger the emergency."
         );
-
       }
-
     } catch (error) {
-
       console.error(error);
 
       sosLockRef.current = false;
@@ -374,122 +538,66 @@ const navigate = useNavigate();
       speakMessage(
         "A server error occurred while triggering the emergency."
       );
-
     }
-
   };
 
-  const notifyContacts = async (emergencyId) => {
-
-  try {
-
-    setStatusMessage("📨 Sending emergency alerts...");
-
-    const response = await fetch(
-      "https://sentinel-ai-backend-67u8.onrender.com/api/notify",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          emergency_id: emergencyId,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-
-      console.log("Notifications");
-
-      console.table(data.notifications);
-      setNotifications(data.notifications);
-
-      setStatusMessage(
-        `✅ ${data.notifications.length} trusted contacts notified`
-      );
-
-    }
-
-    else {
-
-      setStatusMessage("❌ Notification Failed");
-
-    }
-
-  }
-
-  catch(error){
-
-    console.error(error);
-
-    setStatusMessage("❌ Notification Server Error");
-
-  }
-
-};
-
-  // ============================
+  // ============================================================
   // LIVE LOCATION TRACKING
-  // ============================
+  // ============================================================
 
-  const startLocationTracking = (emergencyId) => {
-
+  const startLocationTracking = (
+    emergencyId
+  ) => {
     console.log(
-      "startLocationTracking called"
+      "Starting location tracking..."
     );
 
     if (!navigator.geolocation) {
-
       console.log(
         "Geolocation not supported"
       );
 
       return;
-
     }
 
     if (watchIdRef.current !== null) {
-
       navigator.geolocation.clearWatch(
         watchIdRef.current
       );
-
     }
 
     watchIdRef.current =
       navigator.geolocation.watchPosition(
-
         async (position) => {
-
           console.log(
-            "Tracking Location..."
-          );
-
-          console.log(
+            "Tracking location:",
             position.coords.latitude,
             position.coords.longitude
           );
 
           try {
-
             const response =
               await fetch(
-                "https://sentinel-ai-backend-67u8.onrender.com/api/location/update",
+                `${API_BASE_URL}/api/location/update`,
                 {
                   method: "POST",
+
                   headers: {
                     "Content-Type":
                       "application/json",
                   },
+
                   body: JSON.stringify({
-                    emergency_id: emergencyId,
+                    emergency_id:
+                      emergencyId,
+
                     latitude:
-                      position.coords.latitude,
+                      position.coords
+                        .latitude,
+
                     longitude:
-                      position.coords.longitude,
+                      position.coords
+                        .longitude,
                   }),
                 }
               );
@@ -501,25 +609,19 @@ const navigate = useNavigate();
               "Location API Response:",
               result
             );
-
           } catch (error) {
-
             console.error(
               "Location update failed:",
               error
             );
-
           }
-
         },
 
         (error) => {
-
           console.error(
             "watchPosition Error:",
             error
           );
-
         },
 
         {
@@ -527,14 +629,12 @@ const navigate = useNavigate();
           maximumAge: 0,
           timeout: 10000,
         }
-
       );
-
   };
 
-  // ============================
+  // ============================================================
   // UI
-  // ============================
+  // ============================================================
 
   if (!supported) {
     return (
@@ -547,134 +647,153 @@ const navigate = useNavigate();
   }
 
   return (
-  <div className="bg-white rounded-2xl shadow-lg p-8">
+    <div className="bg-white rounded-2xl shadow-lg p-8">
 
-    <h2 className="text-3xl font-bold mb-6">
-      🎤 Voice SOS
-    </h2>
+      {/* VOICE SOS */}
 
-    {/* Listening Status */}
-    <div className="mb-6">
+      <h2 className="text-3xl font-bold mb-6">
+        🎤 Voice SOS
+      </h2>
 
-      <p className="text-lg font-semibold">
-        Status
-      </p>
-
-      <div className="mt-2">
-        {isListening ? (
-          <span className="text-green-600 font-bold">
-            🟢 Listening...
-          </span>
-        ) : (
-          <span className="text-red-600 font-bold">
-            🔴 Not Listening
-          </span>
-        )}
-      </div>
-
-    </div>
-
-    {/* Transcript */}
-    <div className="bg-gray-100 rounded-xl p-5 min-h-[120px]">
-
-      <p className="font-semibold mb-2">
-        Live Transcript
-      </p>
-
-      <p className="text-gray-700 break-words">
-        {transcript || "Start speaking..."}
-      </p>
-
-    </div>
-
-    {/* Status */}
-    {statusMessage && (
-      <div className="mt-6 p-4 rounded-xl bg-blue-100 text-blue-700 font-semibold">
-        {statusMessage}
-      </div>
-    )}
-
-    {/* Success Card */}
-    {emergencyId && (
-
-      <div className="mt-6 p-6 rounded-2xl border border-green-300 bg-green-50">
-
-        <h3 className="text-2xl font-bold text-green-700">
-          ✅ Emergency Created Successfully
-        </h3>
-
-        <p className="mt-3 text-gray-700">
-          <strong>Emergency ID:</strong> {emergencyId}
+      <div className="mb-6">
+        <p className="text-lg font-semibold">
+          Status
         </p>
 
-        <p className="mt-2 text-gray-600">
-          Your emergency has been registered successfully.
-          Live GPS tracking has started and your trusted contacts
-          are being notified.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-4">
-
-          <button
-            onClick={() => navigate(`/tracking/${emergencyId}`)}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition"
-          >
-            📍 Track Live
-          </button>
-
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition"
-          >
-            🏠 Dashboard
-          </button>
-
+        <div className="mt-2">
+          {isListening ? (
+            <span className="text-green-600 font-bold">
+              🟢 Listening...
+            </span>
+          ) : (
+            <span className="text-red-600 font-bold">
+              🔴 Not Listening
+            </span>
+          )}
         </div>
+      </div>
+
+      <div className="bg-gray-100 rounded-xl p-5 min-h-[120px]">
+        <p className="font-semibold mb-2">
+          Live Transcript
+        </p>
+
+        <p className="text-gray-700 break-words">
+          {transcript ||
+            "Start speaking..."}
+        </p>
+      </div>
+
+      {/* STATUS */}
+
+      {statusMessage && (
+        <div className="mt-6 p-4 rounded-xl bg-blue-100 text-blue-700 font-semibold">
+          {statusMessage}
+        </div>
+      )}
+
+      {/* EMERGENCY ID */}
+
+      {emergencyId && (
+        <div className="mt-4 p-4 rounded-xl bg-green-100 text-green-700">
+          <strong>
+            Emergency ID:
+          </strong>{" "}
+          {emergencyId}
+        </div>
+      )}
+
+      {/* VOICE BUTTONS */}
+
+      <div className="mt-8 flex flex-wrap gap-4">
+
+        <button
+          onClick={startListening}
+          disabled={isListening}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg transition"
+        >
+          <FaMicrophone />
+
+          Start Listening
+        </button>
+
+        <button
+          onClick={stopListening}
+          disabled={!isListening}
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg transition"
+        >
+          <FaStop />
+
+          Stop
+        </button>
 
       </div>
 
-    )}
+      {/* =====================================================
+          SHAKE SOS
+      ===================================================== */}
 
-<NotificationPanel
-    notifications={notifications}
-    emergencyId={emergencyId}
-/>
-    {/* Buttons */}
-    <div className="mt-8 flex flex-wrap gap-4">
+      <div className="mt-10 border-t pt-8">
 
-      <button
-        onClick={startListening}
-        disabled={isListening}
-        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg transition"
-      >
-        <FaMicrophone />
-        Start Listening
-      </button>
+        <h2 className="text-2xl font-bold mb-3">
+          📳 Shake SOS
+        </h2>
 
-      <button
-        onClick={stopListening}
-        disabled={!isListening}
-        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg transition"
-      >
-        <FaStop />
-        Stop
-      </button>
+        <p className="text-gray-600 mb-5">
+          Shake your phone 3 times quickly
+          to trigger an emergency alert.
+        </p>
+
+        {!shakeEnabled ? (
+          <button
+            onClick={
+              enableShakeDetection
+            }
+            className="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+          >
+            📳 Enable Shake Detection
+          </button>
+        ) : (
+          <div className="space-y-4">
+
+            <div className="bg-green-100 text-green-700 p-4 rounded-xl font-semibold">
+              🟢 Shake Detection Active
+            </div>
+
+            {shakeCount > 0 && (
+              <div className="bg-violet-100 text-violet-700 p-4 rounded-xl font-semibold">
+                Shake detected:{" "}
+                {shakeCount}/
+                {REQUIRED_SHAKES}
+              </div>
+            )}
+
+            <button
+              onClick={
+                disableShakeDetection
+              }
+              className="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded-lg transition"
+            >
+              Disable Shake Detection
+            </button>
+
+          </div>
+        )}
+
+      </div>
+
+      {/* SPEECH SUCCESS */}
+
+      {transcript && (
+        <div className="mt-6 flex items-center gap-2 text-green-600 font-semibold">
+          <FaCheckCircle />
+
+          Speech detected successfully.
+        </div>
+      )}
 
     </div>
-
-    {/* Transcript Success */}
-    {transcript && (
-      <div className="mt-6 flex items-center gap-2 text-green-600 font-semibold">
-
-        <FaCheckCircle />
-
-        Speech detected successfully.
-
-      </div>
-    )}
-
-  </div>
-);
+  );
 }
 
 export default VoiceActivator;

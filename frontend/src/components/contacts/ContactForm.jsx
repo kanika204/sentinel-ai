@@ -63,122 +63,117 @@ function ContactForm({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mx-6">
+  <div className="bg-white rounded-2xl shadow-lg p-8">
 
-      <h2 className="text-2xl font-bold text-slate-800 mb-8">
-        {editingContact ? "Edit Contact" : "Add Trusted Contact"}
-      </h2>
+    <h2 className="text-2xl font-bold text-slate-800 mb-8">
+      {editingContact ? "Edit Contact" : "Add Trusted Contact"}
+    </h2>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 px-8"
-      >
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
 
-        {/* Name */}
+      {/* Name */}
+      <div>
 
-        <div>
+        <label className="block mb-2 font-semibold text-gray-700">
+          Name
+        </label>
 
-          <label className="block mb-2 font-semibold text-gray-700">
-            Name
-          </label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Enter contact name"
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        />
 
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Enter contact name"
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          />
+      </div>
 
-        </div>
+      {/* Phone */}
+      <div>
 
-        {/* Phone */}
+        <label className="block mb-2 font-medium">
+          Phone Number
+        </label>
 
-        <div>
+        <input
+          type="text"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="Enter phone number"
+          className="w-full border rounded-lg p-3"
+        />
 
-          <label className="block mb-2 font-medium">
-            Phone Number
-          </label>
+      </div>
 
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Enter phone number"
-            className="w-full border rounded-lg p-3"
-          />
+      {/* Relationship */}
+      <div>
 
-        </div>
+        <label className="block mb-2 font-medium">
+          Relationship
+        </label>
 
-        {/* Relationship */}
+        <input
+          type="text"
+          name="relationship"
+          value={formData.relationship}
+          onChange={handleChange}
+          placeholder="Friend, Brother, Parent..."
+          className="w-full border rounded-lg p-3"
+        />
 
-        <div>
+      </div>
 
-          <label className="block mb-2 font-medium">
-            Relationship
-          </label>
+      {/* Primary Contact */}
+      <div className="flex items-center gap-3 pt-2">
 
-          <input
-            type="text"
-            name="relationship"
-            value={formData.relationship}
-            onChange={handleChange}
-            placeholder="Friend, Brother, Parent..."
-            className="w-full border rounded-lg p-3"
-          />
+        <input
+          type="checkbox"
+          name="is_primary"
+          checked={formData.is_primary}
+          onChange={handleChange}
+        />
 
-        </div>
+        <label>
+          Primary Contact
+        </label>
 
-        {/* Primary Contact */}
+      </div>
 
-        <div className="flex items-center gap-3 pt-2">
+      {/* Buttons */}
+      <div className="flex gap-4">
 
-          <input
-            type="checkbox"
-            name="is_primary"
-            checked={formData.is_primary}
-            onChange={handleChange}
-          />
+        <button
+          type="submit"
+          className={`flex-1 py-3 rounded-xl font-semibold text-white transition duration-200 ${
+            editingContact
+              ? "bg-yellow-500 hover:bg-yellow-600"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {editingContact ? "Update Contact" : "Add Contact"}
+        </button>
 
-          <label>
-            Primary Contact
-          </label>
-
-        </div>
-
-        {/* Buttons */}
-
-        <div className="flex gap-4">
-
+        {editingContact && (
           <button
-            type="submit"
-            className={`flex-1 py-3  rounded-xl font-semibold text-white transition duration-200  ${
-              editingContact
-                ? "bg-yellow-500 hover:bg-yellow-600"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            type="button"
+            onClick={resetForm}
+            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition"
           >
-            {editingContact ? "Update Contact" : "Add Contact"}
+            Cancel
           </button>
+        )}
 
-          {editingContact && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition"
-            >
-              Cancel
-            </button>
-          )}
+      </div>
 
-        </div>
+    </form>
 
-      </form>
-
-    </div>
-  );
+  </div>
+);
 }
 
 export default ContactForm;
