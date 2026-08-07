@@ -2,4 +2,5 @@ Flask
 Flask-Cors
 Flask-SQLAlchemy
 twilio
+reportlab
 gunicorn
