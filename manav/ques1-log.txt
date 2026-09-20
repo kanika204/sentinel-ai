@@ -1,0 +1,109 @@
+import matplotlib.pyplot as plt
+
+# 1. Read the .log file
+
+timestamps = []
+cpu = []
+memory = []
+response_time = []
+
+with open("application.log", "r") as file:
+
+    logs = file.readlines()
+
+    for log in logs:
+
+        parts = log.split()
+
+        timestamp = parts[0]
+        cpu_value = int(parts[1].split("=")[1])
+        memory_value = int(parts[2].split("=")[1])
+        response_value = int(parts[3].split("=")[1])
+
+        timestamps.append(timestamp)
+        cpu.append(cpu_value)
+        memory.append(memory_value)
+        response_time.append(response_value)
+
+# 2. Basic statistics
+
+print("===== BASIC STATISTICS =====")
+
+print("\nCPU")
+print("Minimum:", min(cpu))
+print("Maximum:", max(cpu))
+print("Average:", sum(cpu) / len(cpu))
+
+print("\nMemory")
+print("Minimum:", min(memory))
+print("Maximum:", max(memory))
+print("Average:", sum(memory) / len(memory))
+
+print("\nResponse Time")
+print("Minimum:", min(response_time))
+print("Maximum:", max(response_time))
+print("Average:", sum(response_time) / len(response_time))
+
+# 3. Threshold-based anomaly detection
+
+threshold = 90
+
+anomalies = []
+
+for i in range(len(cpu)):
+
+    if cpu[i] > threshold:
+        anomalies.append(i)
+
+# 4. Print anomalies
+
+print("\n===== ANOMALY DETECTION =====")
+
+print("Total records:", len(cpu))
+print("Anomalies detected:", len(anomalies))
+
+print("\nTimestamp\tCPU\tStatus")
+
+for i in anomalies:
+
+    print(
+        timestamps[i],
+        "\t\t",
+        str(cpu[i]) + "%",
+        "\tANOMALY"
+    )
+
+# 5. Display graph
+
+plt.plot(
+    timestamps,
+    cpu,
+    marker="o",
+    label="CPU Usage"
+)
+
+# Highlight anomalies
+plt.scatter(
+    [timestamps[i] for i in anomalies],
+    [cpu[i] for i in anomalies],
+    marker="x",
+    s=100,
+    label="Anomaly"
+)
+
+# Threshold line
+plt.axhline(
+    y=threshold,
+    linestyle="--",
+    label="Threshold"
+)
+
+plt.xlabel("Timestamp")
+plt.ylabel("CPU Usage (%)")
+plt.title("AIOps Log Anomaly Detection")
+
+plt.xticks(rotation=45)
+plt.legend()
+plt.grid()
+
+plt.show()

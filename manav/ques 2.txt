@@ -1,0 +1,33 @@
+C:\Kafka\kafka_2.13-4.3.1
+
+Generate a new Cluster UUID
+bin\windows\kafka-storage.bat random-uuid
+
+2. Format Kafka storage
+Use your configuration file:
+bin\windows\kafka-storage.bat format --standalone -t YOUR_CLUSTER_UUID -c config\exam-server.properties
+Replace YOUR_CLUSTER_UUID with the UUID you generated
+
+
+3. Start Kafka server
+bin\windows\kafka-server-start.bat config\exam-server.properties
+
+Keep this CMD window open.
+
+
+Producer command:
+bin\windows\kafka-console-producer.bat --topic server_metrics --bootstrap-server localhost:9092
+
+Enter your 10 JSON messages.
+
+Topic:
+
+Open a new CMD:
+
+bin\windows\kafka-topics.bat --create --topic server_metrics --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+Consumer:
+
+Open another CMD:
+
+bin\windows\kafka-console-consumer.bat --topic server_metrics --bootstrap-server localhost:9092 --from-beginning

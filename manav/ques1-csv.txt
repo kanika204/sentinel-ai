@@ -1,0 +1,68 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Read the given dataset
+df = pd.read_csv("server_logs.csv")
+
+print(df)
+
+# 2. Basic statistics
+print("\n===== BASIC STATISTICS =====")
+print(df[["CPU", "Memory", "Response_Time"]].describe())
+
+# 3. Set threshold
+cpu_threshold = 90
+
+# 4. Detect anomalies
+anomalies = df[df["CPU"] > cpu_threshold]
+
+# 5. Print results
+print("\n===== ANOMALY DETECTION =====")
+
+print("Total records:", len(df))
+print("Anomalies detected:", len(anomalies))
+
+print("\nTimestamp\tCPU\tStatus")
+
+for index, row in anomalies.iterrows():
+
+    print(
+        row["Timestamp"],
+        "\t\t",
+        str(row["CPU"]) + "%",
+        "\tANOMALY"
+    )
+
+# 6. Plot CPU values
+plt.plot(
+    df["Timestamp"],
+    df["CPU"],
+    marker="o",
+    label="CPU Usage"
+)
+
+# Highlight anomalies
+plt.scatter(
+    anomalies["Timestamp"],
+    anomalies["CPU"],
+    marker="x",
+    s=100,
+    label="Anomaly"
+)
+
+# Threshold line
+plt.axhline(
+    y=cpu_threshold,
+    linestyle="--",
+    label="Threshold"
+)
+
+plt.xlabel("Timestamp")
+plt.ylabel("CPU Usage (%)")
+plt.title("AIOps Log Anomaly Detection")
+
+plt.xticks(rotation=45)
+plt.legend()
+plt.grid()
+
+plt.show()
